@@ -1,0 +1,102 @@
+---
+import { Icon } from "astro-icon/components";
+import WidgetLayout from "@/components/common/WidgetLayout.astro";
+import I18nKey from "@/i18n/i18nKey";
+import { i18n } from "@/i18n/translation";
+import type { WidgetComponentConfig } from "@/types/config";
+
+interface Props {
+	class?: string;
+	style?: string;
+	widgetConfig?: WidgetComponentConfig;
+}
+const { class: className, style, widgetConfig } = Astro.props;
+
+const showTitle = widgetConfig?.showTitle !== false;
+---
+
+<WidgetLayout
+  name="一言"
+  showTitle={showTitle}
+  id="hitokoto"
+  class={className}
+  style={style}
+>
+  <div id="hitokoto-container" class="relative">
+    <div class="flex items-start gap-3">
+      <Icon is:inline name="fa7-solid:quote-left" class="text-lg text-(--primary)/30 shrink-0 mt-1" aria-hidden="true" />
+      <div class="flex-1 min-w-0">
+        <p id="hitokoto-text" class="text-neutral-700 dark:text-neutral-300 leading-relaxed text-sm mb-2">
+          加载中...
+        </p>
+        <div class="flex items-center justify-between">
+          <p id="hitokoto-from" class="text-xs text-neutral-400 dark:text-neutral-500 truncate">
+            —
+          </p>
+          <button
+            id="hitokoto-refresh"
+            class="btn-plain rounded-md h-7 w-7 flex items-center justify-center hover:text-(--primary) transition-colors"
+            title="换一句"
+            aria-label="换一句"
+          >
+            <Icon is:inline name="material-symbols:refresh-rounded" class="text-base" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</WidgetLayout>
+
+<script>
+(function () {
+    const container = document.getElementById('hitokoto-container');
+    if (!container) return;
+
+    const textEl = document.getElementById('hitokoto-text');
+    const fromEl = document.getElementById('hitokoto-from');
+    const refreshBtn = document.getElementById('hitokoto-refresh');
+
+    let isLoading = false;
+
+    async function fetchHitokoto() {
+        if (isLoading) return;
+        isLoading = true;
+
+        if (refreshBtn) {
+            refreshBtn.classList.add('animate-spin');
+        }
+
+        try {
+            const res = await fetch('https://v1.hitokoto.cn/?c=a&c=b&c=c&c=d&c=e&c=f&c=k&c=i&c=j&c=l');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+
+            if (textEl) {
+                textEl.textContent = data.hitokoto || '...';
+            }
+            if (fromEl) {
+                const from = data.from ? `《${data.from}》` : '';
+                const who = data.from_who ? data.from_who : '';
+                const source = [who, from].filter(Boolean).join(' · ');
+                fromEl.textContent = source ? `— ${source}` : '—';
+            }
+        } catch (e) {
+            console.warn('Hitokoto fetch failed:', e);
+            if (textEl) {
+                textEl.textContent = '获取失败，点击重试';
+            }
+        } finally {
+            isLoading = false;
+            if (refreshBtn) {
+                refreshBtn.classList.remove('animate-spin');
+            }
+        }
+    }
+
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', fetchHitokoto);
+    }
+
+    fetchHitokoto();
+})();
+</script>

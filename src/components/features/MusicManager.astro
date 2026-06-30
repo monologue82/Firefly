@@ -32,8 +32,6 @@ const managerConfigStr = JSON.stringify({
 	mode: config.mode,
 	meting: config.meting,
 	localPlaylist: localPlaylist,
-	enableCustomPlaylist: config.enableCustomPlaylist ?? false,
-	customPlaylistStorage: config.customPlaylistStorage ?? "localStorage",
 	volume: config.volume ?? 0.7,
 	playMode: config.playMode ?? "list",
 	showLyrics: config.showLyrics ?? true,
@@ -351,52 +349,16 @@ const managerConfigStr = JSON.stringify({
         emit('fm:error', { message: state.error });
     });
 
-    // ── Custom playlist fetch (localStorage) ───────────────────
-    function fetchCustomPlaylist() {
-        if (!config.enableCustomPlaylist) return [];
-        try {
-            var data = localStorage.getItem('custom_playlist');
-            if (data) {
-                var list = JSON.parse(data);
-                if (Array.isArray(list)) {
-                    return list.map(function(item) {
-                        return {
-                            name: item.name || 'Unknown',
-                            artist: item.artist || 'Unknown',
-                            url: item.url,
-                            pic: item.pic || '',
-                            lrc: item.lrc || ''
-                        };
-                    });
-                }
-            }
-            return [];
-        } catch (e) {
-            console.warn('Custom playlist fetch failed:', e);
-            return [];
-        }
-    }
-
     // ── Init (idempotent) ────────────────────────────────────
     async function init() {
         if (state.initialized || state.initializing) return;
         state.initializing = true;
 
         try {
-            var metingPlaylist = [];
-            var customPlaylist = [];
-
             if (config.mode === 'meting' && config.meting) {
                 await fetchMetingData();
             } else if (config.mode === 'local') {
                 state.playlist = config.localPlaylist || [];
-            }
-
-            if (config.enableCustomPlaylist) {
-                customPlaylist = fetchCustomPlaylist();
-                if (customPlaylist.length > 0) {
-                    state.playlist = customPlaylist.concat(state.playlist);
-                }
             }
 
             if (state.playlist.length > 0) {

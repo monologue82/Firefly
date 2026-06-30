@@ -15,15 +15,6 @@ export type MusicPlayerConfig = {
 	// 是否在导航栏显示音乐播放器
 	showInNavbar?: boolean;
 
-	// 是否启用自定义歌单（从后台管理的音乐列表，与网易云歌单合并播放）
-	enableCustomPlaylist?: boolean;
-
-	// 自定义歌单存储方式：'localStorage' 本地存储，适合静态托管
-	customPlaylistStorage?: "localStorage";
-
-	// 后台管理密码（前端密码仅防误操作，非真正安全）
-	adminPassword?: string;
-
 	// Meting API 配置
 	meting?: {
 		// Meting API 地址

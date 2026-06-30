@@ -2,6 +2,7 @@
 export type WidgetComponentType =
 	| "profile"
 	| "announcement"
+	| "hitokoto"
 	| "categories"
 	| "tags"
 	| "sidebarToc"
