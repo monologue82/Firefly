@@ -2,7 +2,7 @@
 title: "MikaScore — MMD 动作评分系统"
 description: "基于 MediaPipe 姿态识别的 MMD 动作评分系统，支持实时姿态检测、MMD 模型播放和动作评分可视化。"
 published: 2026-04-26
-image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=MMD%20motion%20scoring%20system%20with%203D%20anime%20character%20model%2C%20pose%20estimation%20skeleton%20overlay%2C%20MediaPipe%20landmarks%2C%20purple%20and%20pink%20neon%20aesthetic%2C%20tech%20interface&image_size=landscape_16_9"
+image: "./cover.png"
 tags: ["MMD", "动作捕捉", "姿态识别", "MediaPipe", "Python", "Flask", "Three.js"]
 category: "开源项目"
 pinned: false

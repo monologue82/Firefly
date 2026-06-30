@@ -2,7 +2,7 @@
 title: "Uni-TTS — 一站式多引擎语音合成平台"
 description: "集成 GPT-SoVITS、CosyVoice、Qwen3-TTS 等 8 大 TTS 引擎的统一管理平台，一键安装、统一界面、模型内置下载。"
 published: 2026-06-27
-image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=modern%20AI%20voice%20synthesis%20platform%20dashboard%20with%20audio%20waveforms%20and%20voice%20cloning%20interface%2C%20dark%20theme%2C%20teal%20accent%20colors%2C%20futuristic%20design&image_size=landscape_16_9"
+image: "./cover.png"
 tags: ["TTS", "语音合成", "AI", "Python", "Vue", "自托管"]
 category: "开源项目"
 pinned: true

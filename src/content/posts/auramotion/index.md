@@ -2,7 +2,7 @@
 title: "AuraMotion — 高精度 MMD 动作捕捉系统"
 description: "基于 MediaPipe 的高精度 MMD 动作捕捉系统，支持全身/半身/手部/面部捕捉，直接导出 VMD 动作文件。"
 published: 2026-04-26
-image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=high%20precision%20MMD%20motion%20capture%20system%2C%20full%20body%20pose%20estimation%20with%20MediaPipe%20skeleton%2C%20anime%20character%20motion%20tracking%2C%20cyberpunk%20blue%20purple%20gradient%2C%20futuristic%20UI%20design&image_size=landscape_16_9"
+image: "./cover.png"
 tags: ["MMD", "动作捕捉", "MediaPipe", "VMD", "Python", "Flask", "OpenCV"]
 category: "开源项目"
 pinned: false

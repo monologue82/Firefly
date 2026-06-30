@@ -2,7 +2,7 @@
 title: "Uni-API — AI 时代的统一 API 网关"
 description: "一个自托管的统一 API 网关，将 60+ AI 提供商整合到单一端点，提供路由、认证、限流、日志和可视化面板。"
 published: 2026-06-29
-image: "./1.png"
+image: "./cover.png"
 tags: ["API", "AI", "FastAPI", "Vue", "网关", "自托管"]
 category: "开源项目"
 pinned: true

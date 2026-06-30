@@ -2,7 +2,7 @@
 title: "Vox Engine Framework — 实时语音识别与翻译系统"
 description: "基于 FunASR/SenseVoice 的流式实时语音识别系统，支持多引擎翻译、流式 TTS 输出、Web 界面管理。"
 published: 2026-04-05
-image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=real-time%20speech%20recognition%20and%20translation%20system%20interface%2C%20audio%20waveform%20visualization%2C%20language%20translation%2C%20dark%20mode%20with%20warm%20orange%20accents%2C%20modern%20web%20app%20design&image_size=landscape_16_9"
+image: "./cover.png"
 tags: ["ASR", "语音识别", "翻译", "TTS", "Python", "Flask", "AI"]
 category: "开源项目"
 pinned: false

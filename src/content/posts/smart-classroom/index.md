@@ -2,7 +2,7 @@
 title: "Smart Classroom — 智能教室管理系统"
 description: "现代化的班级管理系统，支持积分管理、作业管理、卫生管理、随机抽号、数据大屏等功能。"
 published: 2026-04-06
-image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=smart%20classroom%20management%20system%20dashboard%2C%20student%20score%20leaderboard%2C%20homework%20tracking%2C%20modern%20UI%20with%20blue%20and%20cyan%20colors%2C%20data%20visualization%2C%20clean%20educational%20design&image_size=landscape_16_9"
+image: "./cover.png"
 tags: ["教室管理", "教育", "Node.js", "Express", "Web应用"]
 category: "开源项目"
 pinned: false
