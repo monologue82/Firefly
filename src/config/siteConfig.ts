@@ -12,7 +12,7 @@ export const siteConfig: SiteConfig = {
 	subtitle: "Monologue的个人blog  U•ェ•*U",
 
 	// 站点 URL
-	site_url: "https://firefly.cuteleaf.cn",
+	site_url: "https://monologue82.xyz",
 
 	// 站点描述
 	description:
