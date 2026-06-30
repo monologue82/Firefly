@@ -1,0 +1,352 @@
+---
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { Icon } from "astro-icon/components";
+import { musicPlayerConfig } from "@/config/musicConfig";
+
+const title = "音乐管理后台";
+const description = "管理你的音乐播放列表";
+
+const adminPassword = musicPlayerConfig.adminPassword || "admin123";
+---
+
+<MainGridLayout title={title} description={description}>
+  <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-9 py-6 relative w-full">
+      <div class="mb-8">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="h-8 w-8 rounded-lg bg-(--primary) flex items-center justify-center text-white dark:text-black/70">
+            <Icon is:inline name="material-symbols:music-note" class="text-[1.5rem]"></Icon>
+          </div>
+          <div class="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+            音乐管理后台
+          </div>
+        </div>
+        <p class="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
+          管理你的自定义音乐播放列表（数据保存在浏览器本地）
+        </p>
+      </div>
+
+      <!-- 登录表单 -->
+      <div id="login-section" class="max-w-md mx-auto py-10">
+        <div class="text-center mb-6">
+          <Icon is:inline name="material-symbols:lock" class="text-5xl text-(--primary) mb-4"></Icon>
+          <h2 class="text-xl font-bold text-neutral-800 dark:text-neutral-200 mb-2">请输入管理员密码</h2>
+          <p class="text-sm text-neutral-500 dark:text-neutral-400">只有管理员可以访问此页面</p>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <input
+              id="password-input"
+              type="password"
+              placeholder="请输入密码"
+              class="w-full px-4 py-3 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-(--primary) transition-all"
+            />
+          </div>
+          <button
+            id="login-btn"
+            class="w-full py-3 bg-(--primary) text-white rounded-lg font-medium hover:brightness-110 active:brightness-90 transition-all"
+          >
+            登录
+          </button>
+          <p id="login-error" class="text-red-500 text-sm text-center hidden">密码错误，请重试</p>
+        </div>
+      </div>
+
+      <!-- 管理界面 -->
+      <div id="admin-section" class="hidden">
+        <!-- 添加音乐表单 -->
+        <div class="mb-8 p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl">
+          <h3 class="text-lg font-bold text-neutral-800 dark:text-neutral-200 mb-4 flex items-center gap-2">
+            <Icon is:inline name="material-symbols:add" class="text-xl"></Icon>
+            添加新音乐
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">歌曲名称 *</label>
+              <input id="song-name" type="text" placeholder="歌曲名" class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-(--primary) text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">歌手</label>
+              <input id="song-artist" type="text" placeholder="歌手名" class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-(--primary) text-sm" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">音频链接 *</label>
+              <input id="song-url" type="text" placeholder="https://example.com/song.mp3" class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-(--primary) text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">封面图片链接</label>
+              <input id="song-pic" type="text" placeholder="https://example.com/cover.jpg" class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-(--primary) text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">歌词链接或内容</label>
+              <input id="song-lrc" type="text" placeholder="歌词文件URL或LRC内容" class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-(--primary) text-sm" />
+            </div>
+          </div>
+          <button id="add-song-btn" class="mt-4 px-6 py-2 bg-(--primary) text-white rounded-lg font-medium hover:brightness-110 active:brightness-90 transition-all text-sm">
+            添加歌曲
+          </button>
+        </div>
+
+        <!-- 音乐列表 -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2">
+              <Icon is:inline name="material-symbols:playlist-music" class="text-xl"></Icon>
+              自定义歌单 <span id="song-count" class="text-sm font-normal text-neutral-500">(0首)</span>
+            </h3>
+            <div class="flex items-center gap-3">
+              <button id="export-btn" class="text-sm text-neutral-500 hover:text-(--primary) transition-colors flex items-center gap-1" title="导出歌单">
+                <Icon is:inline name="material-symbols:download" class="text-base"></Icon>
+                导出
+              </button>
+              <button id="import-btn" class="text-sm text-neutral-500 hover:text-(--primary) transition-colors flex items-center gap-1" title="导入歌单">
+                <Icon is:inline name="material-symbols:upload" class="text-base"></Icon>
+                导入
+              </button>
+              <input type="file" id="import-file" accept=".json" class="hidden" />
+              <button id="logout-btn" class="text-sm text-neutral-500 hover:text-(--primary) transition-colors flex items-center gap-1">
+                <Icon is:inline name="material-symbols:logout" class="text-base"></Icon>
+                退出登录
+              </button>
+            </div>
+          </div>
+          <div id="song-list" class="space-y-2">
+            <div class="text-center py-10 text-neutral-400">
+              <Icon is:inline name="material-symbols:music-off" class="text-4xl mb-2"></Icon>
+              <p>暂无音乐，添加第一首吧~</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 提示信息 -->
+        <div class="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+          <div class="flex gap-3">
+            <Icon is:inline name="material-symbols:info" class="text-amber-600 dark:text-amber-400 text-xl shrink-0"></Icon>
+            <div class="text-sm text-amber-800 dark:text-amber-300">
+              <p class="font-medium mb-1">温馨提示</p>
+              <ul class="list-disc list-inside space-y-1 text-amber-700 dark:text-amber-400">
+                <li>音乐数据保存在浏览器本地（localStorage），清除浏览器数据会丢失</li>
+                <li>建议使用"导出"功能备份你的歌单</li>
+                <li>换浏览器或设备需要重新导入歌单</li>
+                <li>前端密码仅防误操作，非真正安全加密</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</MainGridLayout>
+
+<script define:vars={{ adminPassword }} is:inline>
+(function() {
+  var TOKEN_KEY = 'music_admin_token';
+  var PLAYLIST_KEY = 'custom_playlist';
+
+  var loginSection = document.getElementById('login-section');
+  var adminSection = document.getElementById('admin-section');
+  var passwordInput = document.getElementById('password-input');
+  var loginBtn = document.getElementById('login-btn');
+  var loginError = document.getElementById('login-error');
+  var logoutBtn = document.getElementById('logout-btn');
+  var addSongBtn = document.getElementById('add-song-btn');
+  var songList = document.getElementById('song-list');
+  var songCount = document.getElementById('song-count');
+  var exportBtn = document.getElementById('export-btn');
+  var importBtn = document.getElementById('import-btn');
+  var importFile = document.getElementById('import-file');
+
+  function getToken() {
+    return localStorage.getItem(TOKEN_KEY);
+  }
+
+  function setToken(token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  }
+
+  function clearToken() {
+    localStorage.removeItem(TOKEN_KEY);
+  }
+
+  function getPlaylist() {
+    try {
+      var data = localStorage.getItem(PLAYLIST_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function savePlaylist(list) {
+    localStorage.setItem(PLAYLIST_KEY, JSON.stringify(list));
+  }
+
+  function showAdmin() {
+    loginSection.classList.add('hidden');
+    adminSection.classList.remove('hidden');
+    loadSongs();
+  }
+
+  function showLogin() {
+    loginSection.classList.remove('hidden');
+    adminSection.classList.add('hidden');
+  }
+
+  function login(password) {
+    if (password === adminPassword) {
+      setToken(password);
+      showAdmin();
+      loginError.classList.add('hidden');
+    } else {
+      loginError.classList.remove('hidden');
+    }
+  }
+
+  function loadSongs() {
+    var playlist = getPlaylist();
+    songCount.textContent = '(' + playlist.length + '首)';
+    renderSongs(playlist);
+  }
+
+  function renderSongs(songs) {
+    if (songs.length === 0) {
+      songList.innerHTML = `
+        <div class="text-center py-10 text-neutral-400">
+          <svg class="w-10 h-10 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+          <p>暂无音乐，添加第一首吧~</p>
+        </div>`;
+      return;
+    }
+
+    songList.innerHTML = songs.map(function(song, index) {
+      return `
+      <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors group" data-id="${song.id}">
+        <div class="text-neutral-400 text-sm w-6 text-center">${index + 1}</div>
+        <div class="w-12 h-12 rounded-md overflow-hidden shrink-0 bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
+          ${song.pic ? `<img src="${song.pic}" alt="" class="w-full h-full object-cover" />` : `<svg class="w-6 h-6 text-neutral-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>`}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="font-medium text-neutral-800 dark:text-neutral-200 truncate">${song.name}</div>
+          <div class="text-xs text-neutral-500 dark:text-neutral-400 truncate">${song.artist || 'Unknown'}</div>
+        </div>
+        <button class="delete-btn opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" data-id="${song.id}" title="删除">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        </button>
+      </div>
+    `}).join('');
+
+    songList.querySelectorAll('.delete-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var id = this.getAttribute('data-id');
+        deleteSong(id);
+      });
+    });
+  }
+
+  function addSong() {
+    var name = document.getElementById('song-name').value.trim();
+    var artist = document.getElementById('song-artist').value.trim();
+    var url = document.getElementById('song-url').value.trim();
+    var pic = document.getElementById('song-pic').value.trim();
+    var lrc = document.getElementById('song-lrc').value.trim();
+
+    if (!name || !url) {
+      alert('请填写歌曲名称和音频链接');
+      return;
+    }
+
+    var playlist = getPlaylist();
+    playlist.push({
+      id: Date.now().toString(),
+      name: name,
+      artist: artist || 'Unknown',
+      url: url,
+      pic: pic || '',
+      lrc: lrc || ''
+    });
+    savePlaylist(playlist);
+
+    document.getElementById('song-name').value = '';
+    document.getElementById('song-artist').value = '';
+    document.getElementById('song-url').value = '';
+    document.getElementById('song-pic').value = '';
+    document.getElementById('song-lrc').value = '';
+    loadSongs();
+  }
+
+  function deleteSong(id) {
+    if (!confirm('确定要删除这首歌吗？')) return;
+    var playlist = getPlaylist();
+    var newPlaylist = playlist.filter(function(s) { return s.id !== id; });
+    savePlaylist(newPlaylist);
+    loadSongs();
+  }
+
+  function exportPlaylist() {
+    var playlist = getPlaylist();
+    var dataStr = JSON.stringify(playlist, null, 2);
+    var blob = new Blob([dataStr], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'custom-playlist.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importPlaylist(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var data = JSON.parse(e.target.result);
+        if (Array.isArray(data)) {
+          if (confirm('确定要导入 ' + data.length + ' 首歌曲吗？这将覆盖当前歌单。')) {
+            savePlaylist(data);
+            loadSongs();
+            alert('导入成功！');
+          }
+        } else {
+          alert('文件格式不正确');
+        }
+      } catch (err) {
+        alert('导入失败：文件格式错误');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  loginBtn.addEventListener('click', function() {
+    var pwd = passwordInput.value;
+    if (pwd) login(pwd);
+  });
+
+  passwordInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      var pwd = passwordInput.value;
+      if (pwd) login(pwd);
+    }
+  });
+
+  logoutBtn.addEventListener('click', function() {
+    clearToken();
+    showLogin();
+  });
+
+  addSongBtn.addEventListener('click', addSong);
+  exportBtn.addEventListener('click', exportPlaylist);
+  importBtn.addEventListener('click', function() {
+    importFile.click();
+  });
+  importFile.addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (file) importPlaylist(file);
+    importFile.value = '';
+  });
+
+  if (getToken() === adminPassword) {
+    showAdmin();
+  } else {
+    showLogin();
+  }
+})();
+</script>

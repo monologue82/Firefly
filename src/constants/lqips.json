@@ -18,5 +18,17 @@
   "src:assets/images/MobileWallpaper/m1.avif": "cccce0cbc0d59294c0",
   "public:assets/images/sponsor/wechat.png": "d5d5d5dad9d7dbd8cf",
   "public:assets/images/sponsor/alipay.png": "8ebbde91bedf93c0e0",
-  "public:assets/images/ad/ad1.webp": "a1b8b68a8e918c8f93"
+  "public:assets/images/ad/ad1.webp": "a1b8b68a8e918c8f93",
+  "src:content/posts/vox-engine/cover.png": "23355c1e25371b2132",
+  "src:content/posts/uni-tts/cover.png": "c5e0eeb9cde1d4dee7",
+  "src:content/posts/smart-classroom/cover.png": "23355c1e25371b2132",
+  "src:content/posts/mikascore/cover.png": "23355c1e25371b2132",
+  "src:content/posts/auramotion/cover.png": "23355c1e25371b2132",
+  "src:content/posts/uni-api/cover.png": "fafafafafafaf8f8f8",
+  "src:content/posts/uni-api/6.png": "abd99a7d9d71aedb9e",
+  "src:content/posts/uni-api/5.png": "28332e191f21283430",
+  "src:content/posts/uni-api/4.png": "323930262926353c33",
+  "src:content/posts/uni-api/3.png": "363e34272926333a30",
+  "src:content/posts/uni-api/2.png": "353d33262925384237",
+  "src:content/posts/uni-api/1.png": "6f8c6410130f070806"
 }
