@@ -1,6 +1,5 @@
 <script lang="ts">
 import ClientPagination from "@components/common/ClientPagination.svelte";
-import { wbiSignedQuery, fetchJson } from "@/utils/bilibili-wbi";
 import { Icon } from "astro-icon/components";
 
 export interface BilibiliVideo {
@@ -15,6 +14,12 @@ export interface BilibiliVideo {
 	typename: string;
 }
 
+interface BilibiliVideoData {
+	updatedAt: string;
+	totalCount: number;
+	videos: BilibiliVideo[];
+}
+
 interface Props {
 	uid: string;
 	itemsPerPage?: number;
@@ -24,104 +29,31 @@ let { uid, itemsPerPage = 12 }: Props = $props();
 
 let videos = $state<BilibiliVideo[]>([]);
 let totalCount = $state(0);
+let updatedAt = $state("");
 let loading = $state(true);
 let error = $state<string | null>(null);
-let loginRequired = $state(false);
 
 let searchQuery = $state("");
 let sortBy = $state<"date-desc" | "play-desc">("date-desc");
 let currentPage = $state(1);
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-interface RawVlistItem {
-	aid: number;
-	bvid: string;
-	title: string;
-	pic: string;
-	desc: string;
-	play: number;
-	video_review: number;
-	comment: number;
-	created: number;
-	length: string;
-	typeid: number;
-	typename: string;
-}
-
-interface ArcSearchResponse {
-	code: number;
-	message?: string;
-	data?: {
-		list?: { vlist: RawVlistItem[] };
-		page?: { count: number };
-	};
-}
-
-async function fetchArcSearch(mid: string, pn: number, ps: number): Promise<ArcSearchResponse> {
-	const MAX_RETRIES = 3;
-	for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-		const query = await wbiSignedQuery({ mid, ps, pn, order: "pubdate" });
-		try {
-			const json = await fetchJson<ArcSearchResponse>(
-				`https://api.bilibili.com/x/space/wbi/arc/search?${query}`,
-			);
-			return json;
-		} catch (e) {
-			console.warn(`[Videos] Attempt ${attempt} failed:`, e instanceof Error ? e.message : e);
-			if (attempt < MAX_RETRIES) await sleep(2000 * attempt);
-		}
-	}
-	return { code: -1, message: "All retries failed" };
-}
-
 async function loadVideos() {
 	loading = true;
 	error = null;
-	loginRequired = false;
 
 	try {
-		const ps = 30;
-		const json1 = await fetchArcSearch(uid, 1, ps);
-
-		if (json1.code === -352 || json1.code === -101) {
-			loginRequired = true;
-			loading = false;
-			return;
+		const res = await fetch("/data/bilibili-videos.json?t=" + Date.now());
+		if (!res.ok) {
+			throw new Error(`加载失败 (${res.status})`);
 		}
-
-		if (json1.code !== 0 || !json1.data?.list?.vlist) {
-			throw new Error(`API returned code ${json1.code}: ${json1.message || ""}`);
-		}
-
-		const vlist: RawVlistItem[] = [...json1.data.list.vlist];
-		totalCount = json1.data.page?.count || vlist.length;
-		const totalPages = Math.ceil(totalCount / ps);
-
-		for (let pn = 2; pn <= totalPages; pn++) {
-			await sleep(500);
-			const json = await fetchArcSearch(uid, pn, ps);
-			if (json.code === 0 && json.data?.list?.vlist) {
-				vlist.push(...json.data.list.vlist);
-			}
-		}
-
-		videos = vlist.map((v) => ({
-			bvid: v.bvid,
-			title: v.title,
-			pic: v.pic || "",
-			desc: v.desc || "",
-			play: v.play || 0,
-			danmaku: v.video_review || 0,
-			created: v.created || 0,
-			length: v.length || "00:00",
-			typename: v.typename || "",
-		}));
-
-		console.log(`[Videos] Fetched ${videos.length} videos from Bilibili.`);
+		const data: BilibiliVideoData = await res.json();
+		videos = data.videos || [];
+		totalCount = data.totalCount || videos.length;
+		updatedAt = data.updatedAt || "";
+		console.log(`[Videos] Loaded ${videos.length} videos from local data.`);
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Unknown error";
-		console.error("[Videos] Bilibili fetch error:", e);
+		console.error("[Videos] Load error:", e);
 	} finally {
 		loading = false;
 	}
@@ -163,6 +95,12 @@ function formatDate(ts: number): string {
 	const d = new Date(ts * 1000);
 	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
+
+function formatUpdateTime(iso: string): string {
+	if (!iso) return "";
+	const d = new Date(iso);
+	return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
 </script>
 
 <div>
@@ -170,25 +108,6 @@ function formatDate(ts: number): string {
 		<div class="text-center py-16">
 			<div class="inline-flex items-center justify-center w-12 h-12 border-4 border-(--primary)/20 border-t-(--primary) rounded-full animate-spin mb-4"></div>
 			<p class="text-neutral-500 dark:text-neutral-400">加载中...</p>
-		</div>
-	{:else if loginRequired}
-		<div class="text-center py-16">
-			<div class="inline-flex items-center justify-center w-16 h-16 bg-(--btn-regular-bg) rounded-full mb-6 border border-(--line-divider)">
-				<Icon is:inline name="material-symbols:lock" class="text-[2rem] text-(--btn-content)" />
-			</div>
-			<h2 class="text-xl font-semibold text-black/80 dark:text-white/80 mb-3">
-				需要登录 Bilibili
-			</h2>
-			<p class="text-black/60 dark:text-white/60 mb-4 max-w-lg mx-auto leading-relaxed">
-				B 站 API 需要登录态才能获取投稿视频列表。请确保你已在当前浏览器登录 B 站账号，然后刷新页面。
-			</p>
-			<button
-				onclick={loadVideos}
-				class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--primary) text-white dark:text-black/70 font-medium hover:opacity-80 transition-opacity"
-			>
-				<Icon is:inline name="material-symbols:refresh" class="text-base" />
-				重新加载
-			</button>
 		</div>
 	{:else if error}
 		<div class="text-center py-16">
@@ -249,6 +168,12 @@ function formatDate(ts: number): string {
 				</div>
 			</div>
 		</div>
+
+		{#if updatedAt}
+			<p class="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
+				数据更新时间：{formatUpdateTime(updatedAt)}（每 6 小时自动更新）
+			</p>
+		{/if}
 
 		<div class="mb-6 flex flex-col sm:flex-row gap-3">
 			<div class="relative flex-1">

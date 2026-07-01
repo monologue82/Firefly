@@ -1,0 +1,40 @@
+name: Fetch Bilibili Videos
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Fetch videos
+        env:
+          BILIBILI_UID: ${{ vars.BILIBILI_UID }}
+          BILIBILI_SESSDATA: ${{ secrets.BILIBILI_SESSDATA }}
+        run: |
+          node scripts/fetch-bilibili-videos.mjs
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/bilibili-videos.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "update: B站视频数据 (GitHub Actions)"
+            git push
+          fi
