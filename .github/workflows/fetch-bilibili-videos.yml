@@ -20,9 +20,14 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Debug environment
+        run: |
+          echo "BILIBILI_UID: ${{ vars.BILIBILI_UID || '1741551557 (default)' }}"
+          echo "BILIBILI_SESSDATA length: ${{ secrets.BILIBILI_SESSDATA && 'Set' || 'NOT SET' }}"
+
       - name: Fetch videos
         env:
-          BILIBILI_UID: ${{ vars.BILIBILI_UID }}
+          BILIBILI_UID: ${{ vars.BILIBILI_UID || '1741551557' }}
           BILIBILI_SESSDATA: ${{ secrets.BILIBILI_SESSDATA }}
         run: |
           node scripts/fetch-bilibili-videos.mjs
