@@ -1,6 +1,5 @@
 <script lang="ts">
 import ClientPagination from "@components/common/ClientPagination.svelte";
-import { Icon } from "astro-icon/components";
 
 export interface BilibiliVideo {
 	bvid: string;
@@ -112,7 +111,7 @@ function formatUpdateTime(iso: string): string {
 	{:else if error}
 		<div class="text-center py-16">
 			<div class="inline-flex items-center justify-center w-16 h-16 bg-red-500/10 rounded-full mb-6">
-				<Icon is:inline name="material-symbols:error" class="text-[2rem] text-red-500" />
+				<svg class="text-[2rem] text-red-500" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
 			</div>
 			<h2 class="text-xl font-semibold text-black/80 dark:text-white/80 mb-3">
 				加载失败
@@ -124,7 +123,7 @@ function formatUpdateTime(iso: string): string {
 				onclick={loadVideos}
 				class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-(--primary) text-white dark:text-black/70 font-medium hover:opacity-80 transition-opacity"
 			>
-				<Icon is:inline name="material-symbols:refresh" class="text-base" />
+				<svg class="text-base" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
 				重试
 			</button>
 		</div>
@@ -133,7 +132,7 @@ function formatUpdateTime(iso: string): string {
 			<div class="bg-(--card-bg) rounded-xl p-3 sm:p-4 border border-(--line-divider)">
 				<div class="flex items-center gap-2 sm:gap-3">
 					<div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-(--primary)/10 flex items-center justify-center shrink-0">
-						<Icon is:inline name="material-symbols:video-library" class="text-[1rem] sm:text-[1.25rem] text-(--primary)" />
+						<svg class="text-[1rem] sm:text-[1.25rem] text-(--primary)" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5v-9l6 4.5-6 4.5z"/></svg>
 					</div>
 					<div class="min-w-0">
 						<div class="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">投稿总数</div>
@@ -144,7 +143,7 @@ function formatUpdateTime(iso: string): string {
 			<div class="bg-(--card-bg) rounded-xl p-3 sm:p-4 border border-(--line-divider)">
 				<div class="flex items-center gap-2 sm:gap-3">
 					<div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-pink-500/10 flex items-center justify-center shrink-0">
-						<Icon is:inline name="material-symbols:play-circle" class="text-[1rem] sm:text-[1.25rem] text-pink-500" />
+						<svg class="text-[1rem] sm:text-[1.25rem] text-pink-500" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
 					</div>
 					<div class="min-w-0">
 						<div class="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">总播放量</div>
@@ -159,7 +158,7 @@ function formatUpdateTime(iso: string): string {
 			<div class="bg-(--card-bg) rounded-xl p-3 sm:p-4 border border-(--line-divider) col-span-2 lg:col-span-1">
 				<div class="flex items-center gap-2 sm:gap-3">
 					<div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-						<Icon is:inline name="fa7-brands:bilibili" class="text-[1rem] sm:text-[1.25rem] text-blue-500" />
+						<svg class="text-[1rem] sm:text-[1.25rem] text-blue-500" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.813 4.653h.094c.236-.003.465.011.68.057.514.106.958.393 1.27.78.317.39.512.85.593 1.334.038.224.044.453.038.68v7.573c-.003.196-.012.39-.048.584-.09.515-.303.972-.624 1.353-.32.38-.748.652-1.218.775-.224.056-.454.075-.685.072H5.587c-.236.003-.465-.011-.68-.057-.514-.106-.958-.393-1.27-.78-.317-.39-.512-.85-.593-1.334-.038-.224-.044-.453-.038-.68V6.42c.003-.196.012-.39.048-.584.09-.515.303-.972.624-1.353.32-.38.748-.652 1.218-.775.224-.056.454-.075.685-.072h12.09zM7.256 7.18l-.048.032-.04.036c-.134.126-.206.287-.23.463-.024.18-.01.364.045.534.055.168.147.316.27.428.123.112.271.183.43.202.16.02.324-.008.468-.092l.048-.032.04-.036c.134-.126.206-.287.23-.463.024-.18.01-.364-.045-.534-.055-.168-.147-.316-.27-.428-.123-.112-.271-.183-.43-.202-.16-.02-.324.008-.468.092zm9.328 0-.048.032-.04.036c-.134.126-.206.287-.23.463-.024.18-.01.364.045.534.055.168.147.316.27.428.123.112.271.183.43.202.16.02.324-.008.468-.092l.048-.032.04-.036c.134-.126.206-.287.23-.463.024-.18.01-.364-.045-.534-.055-.168-.147-.316-.27-.428-.123-.112-.271-.183-.43-.202-.16-.02-.324.008-.468.092zM6.42 9.49v5.958h2.104V9.49H6.42zm9.156 0v5.958h2.104V9.49h-2.104zm-4.592 0v5.958h2.104V9.49h-2.104z"/></svg>
 					</div>
 					<div class="min-w-0">
 						<div class="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">数据来源</div>
