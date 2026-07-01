@@ -108,6 +108,13 @@ const stats = [
 		dynamic: true,
 		id: "last-update",
 	},
+	{
+		icon: "material-symbols:visibility-outline",
+		label: i18n(I18nKey.siteStatsVisitCount),
+		value: 0, // 将由 busuanzi 更新
+		dynamic: true,
+		id: "visit-count",
+	},
 ];
 ---
 
@@ -185,4 +192,31 @@ const stats = [
   document.addEventListener("swup:contentReplaced", () => {
     setTimeout(updateDynamicStats, 100);
   });
-</script>
+
+  // 更新访问量（来自 busuanzi）
+  function updateVisitCount() {
+    const pvEl = document.getElementById('busuanzi_value_site_pv');
+    const visitEls = document.querySelectorAll('[data-stat-id="visit-count"]');
+    if (pvEl && visitEls.length > 0) {
+      const count = pvEl.textContent || '0';
+      visitEls.forEach(function(element) {
+        element.textContent = count.replace(/,/g, '').replace(/ /g, '');
+      });
+    }
+  }
+
+  // busuanzi 脚本加载完成后更新
+  if (document.readyState === 'complete') {
+    setTimeout(updateVisitCount, 500);
+  } else {
+    window.addEventListener('load', function() {
+      setTimeout(updateVisitCount, 500);
+    });
+  }
+
+  // 监听 busuanzi 更新事件
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') {
+      setTimeout(updateVisitCount, 300);
+    }
+  });
