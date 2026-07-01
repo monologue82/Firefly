@@ -1,0 +1,217 @@
+---
+import { Icon } from "astro-icon/components";
+import VideoGrid from "@/components/pages/videos/VideoGrid.svelte";
+import type { BilibiliVideo } from "@/components/pages/videos/VideoGrid.svelte";
+import { siteConfig } from "@/config";
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { formatDateI18nWithTime } from "@/utils/date-utils";
+import { fetchJson, hasSessdata, wbiSignedQuery } from "@/utils/bilibili-wbi";
+
+// 检查页面是否启用
+if (!siteConfig.pages.videos) {
+	return Astro.redirect("/404/");
+}
+
+const buildTime = formatDateI18nWithTime(new Date());
+const BILIBILI_UID = siteConfig.anime?.bilibili?.uid || "";
+
+interface RawVlistItem {
+	aid: number;
+	bvid: string;
+	title: string;
+	pic: string;
+	desc: string;
+	play: number;
+	video_review: number;
+	comment: number;
+	created: number;
+	length: string;
+	typeid: number;
+	typename: string;
+}
+
+interface ArcSearchResponse {
+	code: number;
+	message?: string;
+	data?: {
+		list?: { vlist: RawVlistItem[] };
+		page?: { count: number };
+	};
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** 带重试的 arc/search 请求 */
+async function fetchArcSearch(mid: string, pn: number, ps: number): Promise<ArcSearchResponse> {
+	const MAX_RETRIES = 3;
+	for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+		const query = await wbiSignedQuery({ mid, ps, pn, order: "pubdate" });
+		try {
+			const json = await fetchJson<ArcSearchResponse>(
+				`https://api.bilibili.com/x/space/wbi/arc/search?${query}`,
+			);
+			return json;
+		} catch (e) {
+			console.warn(`[Videos] Attempt ${attempt} failed:`, e instanceof Error ? e.message : e);
+			if (attempt < MAX_RETRIES) await sleep(2000 * attempt);
+		}
+	}
+	return { code: -1, message: "All retries failed" };
+}
+
+let videos: BilibiliVideo[] = [];
+let totalCount = 0;
+let isConfigured = !!BILIBILI_UID;
+let needsCookie = false;
+
+if (BILIBILI_UID) {
+	try {
+		console.log(`[Videos] Fetching Bilibili videos for UID: ${BILIBILI_UID}...`);
+		const ps = 30;
+
+		// 等待 1 秒，避免和 anime 页面的 API 请求冲突
+		await sleep(1000);
+
+		// 第一页
+		const json1 = await fetchArcSearch(BILIBILI_UID, 1, ps);
+
+		if (json1.code === -352 || json1.code === -101) {
+			needsCookie = true;
+			throw new Error(`API returned code ${json1.code}: ${json1.message || ""} — 需要配置 BILIBILI_SESSDATA`);
+		}
+
+		if (json1.code !== 0 || !json1.data?.list?.vlist) {
+			throw new Error(`API returned code ${json1.code}: ${json1.message || ""}`);
+		}
+
+		const vlist: RawVlistItem[] = [...json1.data.list.vlist];
+		totalCount = json1.data.page?.count || vlist.length;
+		const totalPages = Math.ceil(totalCount / ps);
+
+		// 逐页获取剩余数据（避免并发请求触发风控）
+		for (let pn = 2; pn <= totalPages; pn++) {
+			await sleep(500);
+			const json = await fetchArcSearch(BILIBILI_UID, pn, ps);
+			if (json.code === 0 && json.data?.list?.vlist) {
+				vlist.push(...json.data.list.vlist);
+			}
+		}
+
+		videos = vlist.map((v) => ({
+			bvid: v.bvid,
+			title: v.title,
+			pic: v.pic || "",
+			desc: v.desc || "",
+			play: v.play || 0,
+			danmaku: v.video_review || 0,
+			created: v.created || 0,
+			length: v.length || "00:00",
+			typename: v.typename || "",
+		}));
+
+		console.log(`[Videos] Fetched ${videos.length} videos from Bilibili.`);
+	} catch (e) {
+		console.error("[Videos] Bilibili fetch error:", e);
+	}
+}
+---
+
+<MainGridLayout title="我的视频" description="我的 Bilibili 投稿视频">
+  <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
+    <div class="card-base z-10 px-4 sm:px-6 md:px-9 py-4 sm:py-6 relative w-full">
+      <div class="relative w-full mb-8">
+        <div class="mb-6">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="h-8 w-8 rounded-lg bg-(--primary) flex items-center justify-center text-white dark:text-black/70">
+              <Icon is:inline name="fa7-brands:bilibili" class="text-[1.5rem]"></Icon>
+            </div>
+            <div class="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+              我的视频
+            </div>
+          </div>
+          <p class="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            我的 Bilibili 投稿视频，数据来自 Bilibili
+          </p>
+          <p class="text-xs text-neutral-500 dark:text-neutral-500 mt-2">
+            最后更新：{buildTime}
+          </p>
+        </div>
+
+        {!isConfigured ? (
+          <div class="text-center py-16">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-(--btn-regular-bg) rounded-full mb-6 border border-(--line-divider)">
+              <Icon is:inline name="material-symbols:settings" class="text-[2rem] text-(--btn-content)" />
+            </div>
+            <h2 class="text-xl font-semibold text-black/80 dark:text-white/80 mb-3">
+              未配置 Bilibili UID
+            </h2>
+            <p class="text-black/60 dark:text-white/60 mb-4 max-w-md mx-auto">
+              请在 src/config/siteConfig.ts 中配置 Bilibili UID
+            </p>
+          </div>
+        ) : needsCookie ? (
+          <div class="text-center py-16">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-(--btn-regular-bg) rounded-full mb-6 border border-(--line-divider)">
+              <Icon is:inline name="material-symbols:lock" class="text-[2rem] text-(--btn-content)" />
+            </div>
+            <h2 class="text-xl font-semibold text-black/80 dark:text-white/80 mb-3">
+              需要配置 Bilibili Cookie
+            </h2>
+            <p class="text-black/60 dark:text-white/60 mb-4 max-w-lg mx-auto leading-relaxed">
+              B 站 API 需要登录态才能获取投稿视频列表。请在构建环境中设置环境变量 <code class="px-1.5 py-0.5 rounded bg-(--btn-regular-bg) text-sm">BILIBILI_SESSDATA</code>，值为你的 B 站 SESSDATA Cookie。
+            </p>
+            <p class="text-xs text-neutral-500 dark:text-neutral-400 max-w-lg mx-auto">
+              获取方式：登录 bilibili.com → 浏览器开发者工具 → Application → Cookies → 复制 SESSDATA 的值
+            </p>
+          </div>
+        ) : (
+          <>
+            <!-- 统计卡片 -->
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+              <div class="bg-(--card-bg) rounded-xl p-3 sm:p-4 border border-(--line-divider)">
+                <div class="flex items-center gap-2 sm:gap-3">
+                  <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-(--primary)/10 flex items-center justify-center shrink-0">
+                    <Icon is:inline name="material-symbols:video-library" class="text-[1rem] sm:text-[1.25rem] text-(--primary)" />
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">投稿总数</div>
+                    <div class="text-lg sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100">{totalCount}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-(--card-bg) rounded-xl p-3 sm:p-4 border border-(--line-divider)">
+                <div class="flex items-center gap-2 sm:gap-3">
+                  <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-pink-500/10 flex items-center justify-center shrink-0">
+                    <Icon is:inline name="material-symbols:play-circle" class="text-[1rem] sm:text-[1.25rem] text-pink-500" />
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">总播放量</div>
+                    <div class="text-lg sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                      {videos.reduce((s, v) => s + v.play, 0) >= 10000
+                        ? (videos.reduce((s, v) => s + v.play, 0) / 10000).toFixed(1) + "万"
+                        : videos.reduce((s, v) => s + v.play, 0)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-(--card-bg) rounded-xl p-3 sm:p-4 border border-(--line-divider) col-span-2 lg:col-span-1">
+                <div class="flex items-center gap-2 sm:gap-3">
+                  <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                    <Icon is:inline name="fa7-brands:bilibili" class="text-[1rem] sm:text-[1.25rem] text-blue-500" />
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">数据来源</div>
+                    <div class="text-lg sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100 truncate">Bilibili</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 视频网格 -->
+            <VideoGrid client:load items={videos} />
+          </>
+        )}
+      </div>
+    </div>
+  </div>
+</MainGridLayout>

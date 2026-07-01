@@ -51,6 +51,9 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 			// 追番
 			LinkPresets.Anime,
 
+			// 我的视频
+			LinkPresets.Videos,
+
 			// 番组计划
 			LinkPresets.Bangumi,
 		],
@@ -185,6 +188,12 @@ export const LinkPresets: Record<string, NavBarLink> = {
 		url: "/anime/",
 		icon: "material-symbols:live-tv",
 		pageKey: "anime",
+	},
+	Videos: {
+		name: "我的视频",
+		url: "/videos/",
+		icon: "fa7-brands:bilibili",
+		pageKey: "videos",
 	},
 };
 
