@@ -33,8 +33,11 @@ export type MusicPlayerConfig = {
 		auth?: string;
 
 		// 备用 API 配置（当主 API 失败时使用）
-		fallbackApis?: string[];
-	};
+	fallbackApis?: string[];
+
+	// 本地歌词覆盖：按歌曲名匹配，替换 Meting API 返回的歌词
+	localLyrics?: Record<string, string>;
+};
 
 	// 本地音乐配置（当 mode 为 'local' 时使用）
 	local?: {

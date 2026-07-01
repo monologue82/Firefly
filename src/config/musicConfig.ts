@@ -40,6 +40,10 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 			"https://api.injahow.cn/meting/?server=:server&type=:type&id=:id",
 			"https://api.moeyao.cn/meting/?server=:server&type=:type&id=:id",
 		],
+		// 本地歌词覆盖：按歌曲名匹配，替换 Meting API 返回的歌词
+		localLyrics: {
+			"月が綺麗ねと言われたい！": "/assets/music/lrc/月が綺麗ねと言われたい.lrc",
+		},
 	},
 
 	// 本地音乐配置（当 mode 为 'local' 时使用）

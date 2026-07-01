@@ -151,12 +151,22 @@ const managerConfigStr = JSON.stringify({
 
                 if (Array.isArray(data) && data.length > 0) {
                     state.playlist = data.map(function (item) {
+                        var title = item.title || item.name || 'Unknown';
+                        var lrc = item.lrc;
+                        var localLyrics = m.localLyrics || {};
+                        var keys = Object.keys(localLyrics);
+                        for (var k = 0; k < keys.length; k++) {
+                            if (title.indexOf(keys[k]) !== -1) {
+                                lrc = localLyrics[keys[k]];
+                                break;
+                            }
+                        }
                         return {
-                            name: item.title || item.name || 'Unknown',
+                            name: title,
                             artist: item.author || item.artist || 'Unknown',
                             url: item.url,
                             pic: item.pic || item.cover || '',
-                            lrc: item.lrc
+                            lrc: lrc
                         };
                     });
                     return;
