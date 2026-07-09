@@ -1,7 +1,18 @@
 {
-  "updatedAt": "2026-07-09T09:47:00.478Z",
-  "totalCount": 13,
+  "updatedAt": "2026-07-09T19:51:26.293Z",
+  "totalCount": 14,
   "videos": [
+    {
+      "bvid": "BV1BBTv6UEo7",
+      "title": "【中文嵌字】急性恋爱中毒",
+      "pic": "http://i0.hdslb.com/bfs/archive/bc8bfcfa1331ebd5d15c096bf2b1fcd2379a915e.jpg",
+      "desc": "",
+      "play": 11,
+      "danmaku": 0,
+      "created": 1783612800,
+      "length": "03:10",
+      "typename": ""
+    },
     {
       "bvid": "BV1Sx7j63EiT",
       "title": "月が綺麗ね × 中文译制｜暗恋是一个人的月色",
@@ -18,7 +29,7 @@
       "title": "遐蝶ビビデバ(ShortVer.)",
       "pic": "http://i2.hdslb.com/bfs/archive/b01b13b5d81c29ba15be374d86429cb017339493.jpg",
       "desc": "",
-      "play": 416,
+      "play": 419,
       "danmaku": 0,
       "created": 1781421192,
       "length": "00:36",
