@@ -131,7 +131,7 @@ const stats = [
           </span>
         </div>
         <div class="flex items-center">
-          <span 
+          <span
             class="text-base font-bold text-neutral-900 dark:text-neutral-100"
             data-stat-id={stat.id}
           >
@@ -146,77 +146,13 @@ const stats = [
       </div>
     ))}
   </div>
+  <span
+    id="site-stats-data"
+    style="display:none"
+    data-site-start-date={siteStartDate}
+    data-last-post-date={lastPostDate || ""}
+    data-today-text={todayText}
+  ></span>
 </WidgetLayout>
 
-<script is:inline define:vars={{ siteStartDate, lastPostDate, todayText }}>
-  function updateDynamicStats() {
-    const today = new Date();
-
-    // 更新运行天数
-    const startDate = new Date(siteStartDate);
-    const diffTime = Math.abs(today.getTime() - startDate.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    const runningDaysElements = document.querySelectorAll('[data-stat-id="running-days"]');
-    runningDaysElements.forEach((element) => {
-      element.textContent = diffDays.toString();
-    });
-
-    // 更新最后活动时间
-    if (lastPostDate) {
-      const lastPost = new Date(lastPostDate);
-      const timeSinceLastPost = Math.abs(today.getTime() - lastPost.getTime());
-      const daysSinceLastUpdate = Math.floor(timeSinceLastPost / (1000 * 60 * 60 * 24));
-
-      const lastUpdateElements = document.querySelectorAll('[data-stat-id="last-update"]');
-      lastUpdateElements.forEach((element) => {
-        if (daysSinceLastUpdate === 0) {
-          element.textContent = todayText;
-          if (element.nextElementSibling) {
-            element.nextElementSibling.style.display = 'none';
-          }
-        } else {
-          element.textContent = daysSinceLastUpdate.toString();
-          if (element.nextElementSibling) {
-            element.nextElementSibling.style.display = '';
-          }
-        }
-      });
-    }
-  }
-
-  // 页面加载时更新
-  updateDynamicStats();
-
-  // 页面切换时重新更新
-  document.addEventListener("swup:contentReplaced", () => {
-    setTimeout(updateDynamicStats, 100);
-  });
-
-  // 更新访问量（来自 busuanzi）
-  function updateVisitCount() {
-    const pvEl = document.getElementById('busuanzi_value_site_pv');
-    const visitEls = document.querySelectorAll('[data-stat-id="visit-count"]');
-    if (pvEl && visitEls.length > 0) {
-      const count = pvEl.textContent || '0';
-      visitEls.forEach(function(element) {
-        element.textContent = count.replace(/,/g, '').replace(/ /g, '');
-      });
-    }
-  }
-
-  // busuanzi 脚本加载完成后更新
-  if (document.readyState === 'complete') {
-    setTimeout(updateVisitCount, 500);
-  } else {
-    window.addEventListener('load', function() {
-      setTimeout(updateVisitCount, 500);
-    });
-  }
-
-  // 监听 busuanzi 更新事件
-  document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'visible') {
-      setTimeout(updateVisitCount, 300);
-    }
-  });
+<script is:inline src="/js/site-stats.js"></script>
