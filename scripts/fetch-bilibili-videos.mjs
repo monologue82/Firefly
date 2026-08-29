@@ -134,16 +134,26 @@ async function fetchJson(url) {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function fetchArcSearch(mid, pn, ps) {
-	const MAX_RETRIES = 3;
+	const MAX_RETRIES = 5;
 	for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
 		const query = await wbiSignedQuery({ mid, ps, pn, order: "pubdate" });
 		try {
 			const json = await fetchJson(
 				`https://api.bilibili.com/x/space/wbi/arc/search?${query}`,
 			);
-			return json;
+			if (json.code === 0) return json;
+			// 业务码失败（如 -352 风控、-101 未登录），打印后重试
+			console.warn(
+				`[Videos] Page ${pn} code=${json.code} message=${json.message || ""} (attempt ${attempt}/${MAX_RETRIES})`,
+			);
+			if (json.code === -352) {
+				// 风控校验失败，等待更长时间
+				if (attempt < MAX_RETRIES) await sleep(5000 * attempt);
+			} else if (attempt < MAX_RETRIES) {
+				await sleep(2000 * attempt);
+			}
 		} catch (e) {
-			console.warn(`[Videos] Attempt ${attempt} failed:`, e.message);
+			console.warn(`[Videos] Page ${pn} request failed (attempt ${attempt}/${MAX_RETRIES}):`, e.message);
 			if (attempt < MAX_RETRIES) await sleep(2000 * attempt);
 		}
 	}
@@ -158,6 +168,15 @@ async function main() {
 
 	if (json1.code !== 0 || !json1.data?.list?.vlist) {
 		console.error(`API returned code ${json1.code}: ${json1.message || ""}`);
+		if (json1.code === -101) {
+			console.error(
+				"SESSDATA 已失效或未配置。请在 GitHub 仓库 Settings → Secrets and variables → Actions 中更新 BILIBILI_SESSDATA 为最新的登录 Cookie，然后手动触发工作流。",
+			);
+		} else if (json1.code === -352) {
+			console.error(
+				"B 站风控校验失败（-352）。请更新 BILIBILI_SESSDATA，或稍后重试。",
+			);
+		}
 		process.exit(1);
 	}
 
@@ -172,8 +191,21 @@ async function main() {
 		const json = await fetchArcSearch(UID, pn, ps);
 		if (json.code === 0 && json.data?.list?.vlist) {
 			vlist.push(...json.data.list.vlist);
-			console.log(`Fetched page ${pn}/${totalPages}`);
+			console.log(`Fetched page ${pn}/${totalPages} (${json.data.list.vlist.length} videos)`);
+		} else {
+			console.error(
+				`Failed to fetch page ${pn}/${totalPages}: code=${json.code} message=${json.message || ""}`,
+			);
+			process.exit(1);
 		}
+	}
+
+	// 校验完整性：防止拿到不完整数据后误写
+	if (vlist.length < totalCount) {
+		console.warn(
+			`Incomplete data: got ${vlist.length} videos, expected ${totalCount}. Retrying entire fetch...`,
+		);
+		process.exit(2);
 	}
 
 	const videos = vlist.map((v) => ({
